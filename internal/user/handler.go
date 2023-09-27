@@ -5,19 +5,17 @@ import (
 )
 
 type handler struct {
-	*service
+	svc Service
 }
 
-func NewHandler(s *service) *handler {
+func NewHandler(s Service) *handler {
 	return &handler{
-		service: s,
+		svc: s,
 	}
 }
 
 func (h *handler) RegisterUser(c *gin.Context) {
-	return
 }
 
 func (h *handler) LoginUser(c *gin.Context) {
-	return
 }

@@ -8,7 +8,8 @@ type repository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) *repository {
+// returns repository struct implementing the Repository interface
+func NewRepository(db *sql.DB) Repository {
 	return &repository{
 		db: db,
 	}

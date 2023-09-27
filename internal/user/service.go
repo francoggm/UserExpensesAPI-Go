@@ -1,10 +1,11 @@
 package user
 
 type service struct {
-	repo *repository
+	repo Repository
 }
 
-func NewService(r *repository) *service {
+// returns service struct implementing the Service interface
+func NewService(r Repository) Service {
 	return &service{
 		repo: r,
 	}
