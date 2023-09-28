@@ -1,21 +1,28 @@
 package user
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
-type handler struct {
+type Handler struct {
 	svc Service
 }
 
-func NewHandler(s Service) *handler {
-	return &handler{
+func NewHandler(s Service) *Handler {
+	return &Handler{
 		svc: s,
 	}
 }
 
-func (h *handler) RegisterUser(c *gin.Context) {
+func (h *Handler) Register(c *gin.Context) {
+	var newUser User
+	if err := c.BindJSON(&newUser); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 }
 
-func (h *handler) LoginUser(c *gin.Context) {
+func (h *Handler) Login(c *gin.Context) {
 }

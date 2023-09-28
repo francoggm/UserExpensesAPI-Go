@@ -15,8 +15,17 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) CreateUser(email string, password string) (id int64, err error) {
-	return
+func (r *repository) CreateUser(user *User) (int64, error) {
+	var id int64
+
+	query := "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id"
+
+	err := r.db.QueryRow(query, user.Email, user.Password).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
 
 func (r *repository) GetUserByEmail(email string) (user *User, err error) {

@@ -7,11 +7,11 @@ type User struct {
 }
 
 type Repository interface {
-	CreateUser(email string, password string) (id int64, err error)
+	CreateUser(user *User) (int64, error)
 	GetUserByEmail(email string) (user *User, err error)
 }
 
 type Service interface {
-	Register(email string, password string) (user *User, err error)
-	Login(email string, password string) (user *User, err error)
+	CreateUser(user *User) (int64, error)
+	GetUserByEmail(email string, password string) (user *User, err error)
 }
