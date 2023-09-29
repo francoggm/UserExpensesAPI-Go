@@ -6,6 +6,8 @@ import (
 	"expenses_api/internal/user"
 	"expenses_api/routers"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -24,5 +26,11 @@ func main() {
 	userService := user.NewService(userRepo)
 	userHandler := user.NewHandler(userService)
 
-	routers.InitRouter(userHandler)
+	engine := *gin.Default()
+	routers.ConfigureRouters(&engine, userHandler)
+
+	err = routers.Start(&engine)
+	if err != nil {
+		log.Fatal("failed to start server!")
+	}
 }
