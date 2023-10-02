@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"expenses_api/configs"
 	"fmt"
+
+	_ "github.com/lib/pq"
 )
 
 func NewDatabase() (*sql.DB, error) {

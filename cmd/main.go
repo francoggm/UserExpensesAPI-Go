@@ -6,19 +6,17 @@ import (
 	"expenses_api/internal/user"
 	"expenses_api/routers"
 	"log"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	err := configs.Load()
 	if err != nil {
-		log.Fatal("failed to load configs!")
+		log.Fatalf("failed to load configs! -> %s", err)
 	}
 
 	db, err := db.NewDatabase()
 	if err != nil {
-		log.Fatal("failed to connect database!")
+		log.Fatalf("failed to connect database!-> %s", err)
 	}
 	defer db.Close()
 
@@ -26,10 +24,9 @@ func main() {
 	userService := user.NewService(userRepo)
 	userHandler := user.NewHandler(userService)
 
-	engine := *gin.Default()
-	routers.ConfigureRouters(&engine, userHandler)
-
-	err = routers.Start(&engine)
+	routers.ConfigureRouters(userHandler)
+	
+	err = routers.Start()
 	if err != nil {
 		log.Fatal("failed to start server!")
 	}

@@ -14,12 +14,17 @@ func NewService(r Repository) Service {
 func (s *service) CreateUser(user *User) (int64, error) {
 	id, err := s.repo.CreateUser(user)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	return id, nil
 }
 
-func (s *service) GetUserByEmail(email string, password string) (user *User, err error) {
-	return
+func (s *service) GetUserByEmail(email string) (*User, error) {
+	user, err := s.repo.GetUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

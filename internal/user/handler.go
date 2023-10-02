@@ -1,8 +1,10 @@
 package user
 
 import (
+	"database/sql"
 	"expenses_api/utils"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,16 +34,52 @@ func (h *Handler) Register(c *gin.Context) {
 
 	newUser.Password = hashedPassword
 
-	userId, err := h.srv.CreateUser(&newUser); if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})	
+	userId, err := h.srv.CreateUser(&newUser)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"email": newUser.Email,
-		"id": userId,
+		"id":    userId,
 	})
 }
 
 func (h *Handler) Login(c *gin.Context) {
+	var req User
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return	
+	}
+
+	user, err := h.srv.GetUserByEmail(req.Email)
+	if err != nil {
+		statusCode := 0
+		
+		if err == sql.ErrNoRows {
+			statusCode = http.StatusNotFound			
+		} else {
+			statusCode = http.StatusInternalServerError
+		}
+
+		c.JSON(statusCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = utils.CheckHashedPassword(user.Password, req.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return		
+	}
+
+	c.SetCookie("email", user.Email, int(4 * time.Hour), "/", "localhost", false, true)
+	c.SetCookie("password", user.Password, int(4 * time.Hour), "/", "localhost", false, true)
+
+	c.JSON(http.StatusOK, gin.H{
+		"id": user.ID,
+		"email":user.Email,
+		"created_at": user.CreatedAt,
+		"last_login": user.LastLogin,
+	})
 }
