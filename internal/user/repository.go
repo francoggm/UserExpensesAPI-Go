@@ -16,17 +16,22 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) CreateUser(user *User) (int64, error) {
+func (r *repository) CreateUser(user *User) error {
 	var id int64
 
-	query := "INSERT INTO users (email, password, created_at) VALUES ($1, $2, $3) RETURNING user_id"
+	query := "INSERT INTO users (email, password, name, created_at) VALUES ($1, $2, $3, $4) RETURNING id"
 
-	err := r.db.QueryRow(query, user.Email, user.Password, time.Now().Format("2006-01-02 15:04:05")).Scan(&id)
+	createdDate := time.Now().Format("2006-01-02 15:04:05")
+
+	err := r.db.QueryRow(query, user.Email, user.Password, user.Name, createdDate).Scan(&id)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	return id, nil
+	user.ID = id
+	user.CreatedAt = createdDate
+
+	return nil
 }
 
 func (r *repository) GetUserByEmail(email string) (*User, error) {

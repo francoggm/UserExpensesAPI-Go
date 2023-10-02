@@ -25,9 +25,9 @@ func main() {
 	userHandler := user.NewHandler(userService)
 
 	routers.ConfigureRouters(userHandler)
-	
+
 	err = routers.Start()
 	if err != nil {
-		log.Fatal("failed to start server!")
+		log.Fatalf("failed to start server!-> %s", err)
 	}
 }
