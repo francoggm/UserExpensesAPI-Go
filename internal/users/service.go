@@ -1,4 +1,4 @@
-package user
+package users
 
 type service struct {
 	repo Repository

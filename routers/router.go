@@ -2,7 +2,7 @@ package routers
 
 import (
 	"expenses_api/configs"
-	"expenses_api/internal/user"
+	"expenses_api/internal/users"
 	"fmt"
 	"time"
 
@@ -28,7 +28,7 @@ func configureMiddlewares() {
 
 }
 
-func ConfigureRouters(userHandler *user.Handler) {
+func ConfigureRouters(userHandler *users.Handler) {
 	engine = gin.Default()
 
 	configureCors()

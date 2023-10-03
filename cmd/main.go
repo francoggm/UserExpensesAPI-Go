@@ -3,7 +3,7 @@ package main
 import (
 	"expenses_api/configs"
 	"expenses_api/db"
-	"expenses_api/internal/user"
+	"expenses_api/internal/users"
 	"expenses_api/routers"
 	"log"
 )
@@ -20,9 +20,9 @@ func main() {
 	}
 	defer db.Close()
 
-	userRepo := user.NewRepository(db)
-	userService := user.NewService(userRepo)
-	userHandler := user.NewHandler(userService)
+	userRepo := users.NewRepository(db)
+	userService := users.NewService(userRepo)
+	userHandler := users.NewHandler(userService)
 
 	routers.ConfigureRouters(userHandler)
 
