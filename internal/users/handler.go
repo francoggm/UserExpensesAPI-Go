@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -41,11 +42,9 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, UserResponse{
-		ID:        req.ID,
-		Email:     req.Email,
-		Name:      req.Name,
-		CreatedAt: req.CreatedAt,
-		LastLogin: req.LastLogin,
+		ID:    req.ID,
+		Email: req.Email,
+		Name:  req.Name,
 	})
 }
 
@@ -62,7 +61,7 @@ func (h *Handler) Login(c *gin.Context) {
 
 		if err == sql.ErrNoRows {
 			statusCode = http.StatusNotFound
-		} else {	
+		} else {
 			statusCode = http.StatusInternalServerError
 		}
 
@@ -76,14 +75,20 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("email", user.Email, int(4*time.Hour), "/", "localhost", false, true)
-	c.SetCookie("password", user.Password, int(4*time.Hour), "/", "localhost", false, true)
+	sessionId, _ := c.Cookie("session_token")
+	delete(sessions, sessionId)
+
+	sessionId = uuid.New().String()
+	sessions[sessionId] = session{
+		userId:  user.ID,
+		expires: time.Now().Add(2 * time.Hour),
+	}
+
+	c.SetCookie("session_token", sessionId, int(2*time.Hour), "/", "localhost", false, true)
 
 	c.JSON(http.StatusOK, UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		CreatedAt: user.CreatedAt,
-		LastLogin: user.LastLogin,
+		ID:    user.ID,
+		Email: user.Email,
+		Name:  user.Name,
 	})
 }

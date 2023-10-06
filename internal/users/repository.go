@@ -38,7 +38,7 @@ func (r *repository) GetUserByEmail(email string) (*User, error) {
 	var user User
 	var lastLogin sql.NullString
 
-	err := r.db.QueryRow("SELECT * FROM users WHERE email=$1", email).Scan(&user.ID, &user.Email, &user.Password, &user.CreatedAt, &lastLogin)
+	err := r.db.QueryRow("SELECT * FROM users WHERE email=$1", email).Scan(&user.ID, &user.Email, &user.Name, &user.Password, &user.CreatedAt, &lastLogin)
 	if err != nil {
 		return nil, err
 	}
