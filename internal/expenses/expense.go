@@ -5,16 +5,16 @@ type MovimentationType int
 
 const (
 	UndefinedCategory CategoryType = iota
-	Food              CategoryType = 1
-	Health            CategoryType = 2
-	Mobility          CategoryType = 3
-	Education         CategoryType = 4
+	Food
+	Health
+	Mobility
+	Education
 )
 
 const (
 	UndefinedMovimentation MovimentationType = iota
-	Input                  MovimentationType = 1
-	Output                 MovimentationType = 2
+	Input
+	Output
 )
 
 type Expense struct {

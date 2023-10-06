@@ -2,6 +2,7 @@ package routers
 
 import (
 	"expenses_api/configs"
+	"expenses_api/internal/expenses"
 	"expenses_api/internal/users"
 	"fmt"
 	"time"
@@ -28,7 +29,7 @@ func configureMiddlewares() {
 
 }
 
-func ConfigureRouters(userHandler *users.Handler) {
+func ConfigureRouters(userHandler *users.Handler, expenseHandler *expenses.Handler) {
 	engine = gin.Default()
 
 	configureCors()
@@ -37,6 +38,9 @@ func ConfigureRouters(userHandler *users.Handler) {
 	authGroup := engine.Group("/auth")
 	authGroup.POST("/signup", userHandler.Register)
 	authGroup.POST("/login", userHandler.Login)
+
+	expensesGroup := engine.Group("/expenses")
+	expensesGroup.POST("", expenseHandler.CreateExpense)
 }
 
 func Start() error {

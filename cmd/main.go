@@ -3,6 +3,7 @@ package main
 import (
 	"expenses_api/configs"
 	"expenses_api/db"
+	"expenses_api/internal/expenses"
 	"expenses_api/internal/users"
 	"expenses_api/routers"
 	"log"
@@ -24,7 +25,11 @@ func main() {
 	userService := users.NewService(userRepo)
 	userHandler := users.NewHandler(userService)
 
-	routers.ConfigureRouters(userHandler)
+	expenseRepo := expenses.NewRepository(db)
+	expenseService := expenses.NewService(expenseRepo)
+	expenseHandler := expenses.NewHandler(expenseService)
+
+	routers.ConfigureRouters(userHandler, expenseHandler)
 
 	err = routers.Start()
 	if err != nil {

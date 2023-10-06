@@ -88,7 +88,7 @@ func (r *repository) CreateExpense(expense *Expense) error {
 
 	createdDate := time.Now().Format("2006-01-02 15:04:05")
 
-	err := r.db.QueryRow(query, expense.Title, expense.Description, expense.Value, expense.Category, expense.Movimentation, createdDate).Scan(&id)
+	err := r.db.QueryRow(query, expense.UserID, expense.Title, expense.Description, expense.Value, expense.Category, expense.Movimentation, createdDate).Scan(&id)
 	if err != nil {
 		return err
 	}

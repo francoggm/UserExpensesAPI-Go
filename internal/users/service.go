@@ -11,20 +11,10 @@ func NewService(r Repository) Service {
 	}
 }
 
-func (s *service) CreateUser(user *User) (error) {
-	err := s.repo.CreateUser(user)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (s *service) CreateUser(user *User) error {
+	return s.repo.CreateUser(user)
 }
 
 func (s *service) GetUserByEmail(email string) (*User, error) {
-	user, err := s.repo.GetUserByEmail(email)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return s.repo.GetUserByEmail(email)
 }
