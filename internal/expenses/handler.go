@@ -56,7 +56,7 @@ func (h *Handler) GetExpense(c *gin.Context) {
 	expense, err := h.srv.GetExpense(id, userId)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 			return
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -98,4 +98,34 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 		Category:      req.Category,
 		Movimentation: req.Movimentation,
 	})
+}
+
+func (h *Handler) DeleteExpense(c *gin.Context) {
+	sessionToken, _ := c.Cookie("session_token")
+
+	userId := users.GetIdBySession(sessionToken)
+	if userId == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": ""})
+		return
+	}
+
+	pathId := c.Param("id")
+	id, err := strconv.ParseInt(pathId, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.srv.DeleteExpense(id, userId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			return
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	c.Status(http.StatusOK)
 }

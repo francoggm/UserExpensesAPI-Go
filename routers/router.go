@@ -43,6 +43,7 @@ func ConfigureRouters(userHandler *users.Handler, expenseHandler *expenses.Handl
 	expensesGroup.POST("", userHandler.Authenticate, expenseHandler.CreateExpense)
 	expensesGroup.GET("", userHandler.Authenticate, expenseHandler.GetExpenses)
 	expensesGroup.GET("/:id", userHandler.Authenticate, expenseHandler.GetExpense)
+	expensesGroup.DELETE("/:id", userHandler.Authenticate, expenseHandler.DeleteExpense)
 }
 
 func Start() error {

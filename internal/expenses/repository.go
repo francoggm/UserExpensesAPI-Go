@@ -104,5 +104,12 @@ func (r *repository) UpdateExpense(expense *Expense) error {
 }
 
 func (r *repository) DeleteExpense(id, userId int64) error {
+	query := "DELETE FROM expenses WHERE id=$1 AND user_id=$2"
+
+	_, err := r.db.Exec(query, id, userId)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

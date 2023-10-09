@@ -56,16 +56,13 @@ func (h *Handler) Login(c *gin.Context) {
 
 	user, err := h.srv.GetUserByEmail(req.Email)
 	if err != nil {
-		statusCode := 0
-
 		if err == sql.ErrNoRows {
-			statusCode = http.StatusNotFound
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			return
 		} else {
-			statusCode = http.StatusInternalServerError
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
 		}
-
-		c.JSON(statusCode, gin.H{"error": err.Error()})
-		return
 	}
 
 	err = utils.CheckHashedPassword(user.Password, req.Password)

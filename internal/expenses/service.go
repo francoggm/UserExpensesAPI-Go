@@ -27,5 +27,5 @@ func (s *service) UpdateExpense(expense *Expense) error {
 }
 
 func (s *service) DeleteExpense(id, userId int64) error {
-	return nil
+	return s.repo.DeleteExpense(id, userId)
 }
