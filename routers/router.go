@@ -40,7 +40,9 @@ func ConfigureRouters(userHandler *users.Handler, expenseHandler *expenses.Handl
 	authGroup.POST("/login", userHandler.Login)
 
 	expensesGroup := engine.Group("/expenses")
-	expensesGroup.POST("", expenseHandler.CreateExpense)
+	expensesGroup.POST("", userHandler.Authenticate, expenseHandler.CreateExpense)
+	expensesGroup.GET("", userHandler.Authenticate, expenseHandler.GetExpenses)
+	expensesGroup.GET("/:id", userHandler.Authenticate, expenseHandler.GetExpense)
 }
 
 func Start() error {

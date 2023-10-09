@@ -25,7 +25,6 @@ type User struct {
 }
 
 type UserResponse struct {
-	ID    int64  `json:"id"`
 	Email string `json:"email"`
 	Name  string `json:"name"`
 }
@@ -55,10 +54,5 @@ func IsAuthenticated(sessionToken string) bool {
 }
 
 func GetIdBySession(sessionToken string) int64 {
-	userSession, exists := sessions[sessionToken]
-	if !exists {
-		return -1
-	}
-
-	return userSession.userId
+	return sessions[sessionToken].userId
 }

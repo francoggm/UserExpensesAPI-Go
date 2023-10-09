@@ -16,25 +16,25 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetExpenses(userId int64) ([]*Expense, error) {
-	var expenses []*Expense
+func (r *repository) GetExpenses(userId int64) ([]*ExpenseResponse, error) {
+	var expenses []*ExpenseResponse
 
-	rows, err := r.db.Query("SELECT * FROM expenses WHERE user_id=$1", userId)
+	query := "SELECT id, title, description, value, category_type, movimentation_type FROM expenses WHERE user_id=$1"
+
+	rows, err := r.db.Query(query, userId)
 	if err != nil {
 		return nil, err
 	}
 
 	for rows.Next() {
-		var expense Expense
+		var expense ExpenseResponse
 		var description sql.NullString
 		var categoryType, movimentationType sql.NullInt16
 
 		err = rows.Scan(
 			&expense.ID,
-			&expense.UserID,
 			&expense.Title,
 			&description,
-			&expense.CreatedAt,
 			&expense.Value,
 			&categoryType,
 			&movimentationType,
@@ -54,17 +54,17 @@ func (r *repository) GetExpenses(userId int64) ([]*Expense, error) {
 	return expenses, nil
 }
 
-func (r *repository) GetExpense(id, userId int64) (*Expense, error) {
-	var expense Expense
+func (r *repository) GetExpense(id, userId int64) (*ExpenseResponse, error) {
+	var expense ExpenseResponse
 	var description sql.NullString
 	var categoryType, movimentationType sql.NullInt16
 
-	err := r.db.QueryRow("SELECT * FROM users WHERE id=$1 AND user_id=$2", id, userId).Scan(
+	query := "SELECT id, title, description, value, category_type, movimentation_type FROM expenses WHERE id=$1 AND user_id=$2"
+
+	err := r.db.QueryRow(query, id, userId).Scan(
 		&expense.ID,
-		&expense.UserID,
 		&expense.Title,
 		&description,
-		&expense.CreatedAt,
 		&expense.Value,
 		&categoryType,
 		&movimentationType,
@@ -103,6 +103,6 @@ func (r *repository) UpdateExpense(expense *Expense) error {
 	return nil
 }
 
-func (r *repository) DeleteExpense(expense *Expense) error {
+func (r *repository) DeleteExpense(id, userId int64) error {
 	return nil
 }

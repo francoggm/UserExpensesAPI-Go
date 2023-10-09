@@ -42,7 +42,6 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, UserResponse{
-		ID:    req.ID,
 		Email: req.Email,
 		Name:  req.Name,
 	})
@@ -87,8 +86,15 @@ func (h *Handler) Login(c *gin.Context) {
 	c.SetCookie("session_token", sessionId, int(2*time.Hour), "/", "localhost", false, true)
 
 	c.JSON(http.StatusOK, UserResponse{
-		ID:    user.ID,
 		Email: user.Email,
 		Name:  user.Name,
 	})
+}
+
+func (h *Handler) Authenticate(c *gin.Context) {
+	sessionToken, _ := c.Cookie("session_token")
+	if !IsAuthenticated(sessionToken) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "please log in to continue!"})
+		return
+	}
 }
