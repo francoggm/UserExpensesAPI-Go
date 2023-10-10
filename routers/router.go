@@ -41,8 +41,9 @@ func ConfigureRouters(userHandler *users.Handler, expenseHandler *expenses.Handl
 
 	expensesGroup := engine.Group("/expenses")
 	expensesGroup.POST("", userHandler.Authenticate, expenseHandler.CreateExpense)
-	expensesGroup.GET("", userHandler.Authenticate, expenseHandler.GetExpenses)
+	expensesGroup.GET("", userHandler.Authenticate, expenseHandler.ListExpenses)
 	expensesGroup.GET("/:id", userHandler.Authenticate, expenseHandler.GetExpense)
+	expensesGroup.PUT("/:id", userHandler.Authenticate, expenseHandler.UpdateExpense)
 	expensesGroup.DELETE("/:id", userHandler.Authenticate, expenseHandler.DeleteExpense)
 }
 

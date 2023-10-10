@@ -35,20 +35,21 @@ type ExpenseResponse struct {
 	Value         float32           `json:"value" db:"value"`
 	Category      CategoryType      `json:"category_type" db:"category_type"`
 	Movimentation MovimentationType `json:"movimentation_type" db:"movimentation_type"`
+	CreatedAt     string            `json:"created_at" db:"created_at"`
 }
 
 type Repository interface {
-	GetExpenses(userId int64) ([]*ExpenseResponse, error)
-	GetExpense(id, userId int64) (*ExpenseResponse, error)
+	ListExpenses(userId int64) ([]*Expense, error)
+	GetExpense(id, userId int64) (*Expense, error)
 	CreateExpense(expense *Expense) error
-	UpdateExpense(expense *Expense) error
+	UpdateExpense(id int64, userId int64, expense *Expense) error
 	DeleteExpense(id, userId int64) error
 }
 
 type Service interface {
-	GetExpenses(userId int64) ([]*ExpenseResponse, error)
-	GetExpense(id, userId int64) (*ExpenseResponse, error)
+	ListExpenses(userId int64) ([]*Expense, error)
+	GetExpense(id, userId int64) (*Expense, error)
 	CreateExpense(expense *Expense) error
-	UpdateExpense(expense *Expense) error
+	UpdateExpense(id int64, userId int64, expense *Expense) error
 	DeleteExpense(id, userId int64) error
 }

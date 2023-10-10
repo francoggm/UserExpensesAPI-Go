@@ -10,11 +10,11 @@ func NewService(r Repository) Service {
 	}
 }
 
-func (s *service) GetExpenses(userId int64) ([]*ExpenseResponse, error) {
-	return s.repo.GetExpenses(userId)
+func (s *service) ListExpenses(userId int64) ([]*Expense, error) {
+	return s.repo.ListExpenses(userId)
 }
 
-func (s *service) GetExpense(id, userId int64) (*ExpenseResponse, error) {
+func (s *service) GetExpense(id, userId int64) (*Expense, error) {
 	return s.repo.GetExpense(id, userId)
 }
 
@@ -22,8 +22,8 @@ func (s *service) CreateExpense(expense *Expense) error {
 	return s.repo.CreateExpense(expense)
 }
 
-func (s *service) UpdateExpense(expense *Expense) error {
-	return nil
+func (s *service) UpdateExpense(id int64, userId int64, expense *Expense) error {
+	return s.repo.UpdateExpense(id, userId, expense)
 }
 
 func (s *service) DeleteExpense(id, userId int64) error {

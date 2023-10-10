@@ -16,10 +16,10 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func (r *repository) GetExpenses(userId int64) ([]*ExpenseResponse, error) {
-	var expenses []*ExpenseResponse
+func (r *repository) ListExpenses(userId int64) ([]*Expense, error) {
+	var expenses []*Expense
 
-	query := "SELECT id, title, description, value, category_type, movimentation_type FROM expenses WHERE user_id=$1"
+	query := "SELECT * FROM expenses WHERE user_id=$1"
 
 	rows, err := r.db.Query(query, userId)
 	if err != nil {
@@ -27,14 +27,16 @@ func (r *repository) GetExpenses(userId int64) ([]*ExpenseResponse, error) {
 	}
 
 	for rows.Next() {
-		var expense ExpenseResponse
+		var expense Expense
 		var description sql.NullString
 		var categoryType, movimentationType sql.NullInt16
 
 		err = rows.Scan(
 			&expense.ID,
+			&expense.UserID,
 			&expense.Title,
 			&description,
+			&expense.CreatedAt,
 			&expense.Value,
 			&categoryType,
 			&movimentationType,
@@ -54,17 +56,19 @@ func (r *repository) GetExpenses(userId int64) ([]*ExpenseResponse, error) {
 	return expenses, nil
 }
 
-func (r *repository) GetExpense(id, userId int64) (*ExpenseResponse, error) {
-	var expense ExpenseResponse
+func (r *repository) GetExpense(id, userId int64) (*Expense, error) {
+	var expense Expense
 	var description sql.NullString
 	var categoryType, movimentationType sql.NullInt16
 
-	query := "SELECT id, title, description, value, category_type, movimentation_type FROM expenses WHERE id=$1 AND user_id=$2"
+	query := "SELECT * FROM expenses WHERE id=$1 AND user_id=$2"
 
 	err := r.db.QueryRow(query, id, userId).Scan(
 		&expense.ID,
+		&expense.UserID,
 		&expense.Title,
 		&description,
+		&expense.CreatedAt,
 		&expense.Value,
 		&categoryType,
 		&movimentationType,
@@ -99,17 +103,16 @@ func (r *repository) CreateExpense(expense *Expense) error {
 	return nil
 }
 
-func (r *repository) UpdateExpense(expense *Expense) error {
-	return nil
+func (r *repository) UpdateExpense(id int64, userId int64, expense *Expense) error {
+	query := "UPDATE expenses SET title=$1, description=$2, value=$3, category_type=$4, movimentation_type=$5 WHERE id=$6 AND user_id=$7"
+
+	_, err := r.db.Exec(query, expense.Title, expense.Description, expense.Value, expense.Category, expense.Movimentation, id, userId)
+	return err
 }
 
 func (r *repository) DeleteExpense(id, userId int64) error {
 	query := "DELETE FROM expenses WHERE id=$1 AND user_id=$2"
 
 	_, err := r.db.Exec(query, id, userId)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

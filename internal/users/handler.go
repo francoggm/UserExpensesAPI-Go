@@ -91,7 +91,7 @@ func (h *Handler) Login(c *gin.Context) {
 func (h *Handler) Authenticate(c *gin.Context) {
 	sessionToken, _ := c.Cookie("session_token")
 	if !IsAuthenticated(sessionToken) {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "please log in to continue!"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "please login to continue!"})
 		return
 	}
 }
