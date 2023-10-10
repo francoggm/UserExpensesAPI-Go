@@ -1,5 +1,7 @@
 package expenses
 
+import "time"
+
 type CategoryType int
 type MovimentationType int
 
@@ -25,7 +27,7 @@ type Expense struct {
 	Value         float32           `json:"value" db:"value"`
 	Category      CategoryType      `json:"category_type" db:"category_type"`
 	Movimentation MovimentationType `json:"movimentation_type" db:"movimentation_type"`
-	CreatedAt     string            `json:"created_at" db:"created_at"`
+	CreatedAt     time.Time         `json:"created_at" db:"created_at"`
 }
 
 type ExpenseResponse struct {
@@ -35,7 +37,7 @@ type ExpenseResponse struct {
 	Value         float32           `json:"value" db:"value"`
 	Category      CategoryType      `json:"category_type" db:"category_type"`
 	Movimentation MovimentationType `json:"movimentation_type" db:"movimentation_type"`
-	CreatedAt     string            `json:"created_at" db:"created_at"`
+	CreatedAt     time.Time         `json:"created_at" db:"created_at"`
 }
 
 type Repository interface {

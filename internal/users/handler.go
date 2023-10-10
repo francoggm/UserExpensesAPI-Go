@@ -77,10 +77,12 @@ func (h *Handler) Login(c *gin.Context) {
 	sessionId = uuid.New().String()
 	sessions[sessionId] = session{
 		userId:  user.ID,
-		expires: time.Now().Add(2 * time.Hour),
+		expires: time.Now().Add(30 * time.Minute),
 	}
 
 	c.SetCookie("session_token", sessionId, int(2*time.Hour), "/", "localhost", false, true)
+
+	h.srv.SetLastLogin(user.ID, time.Now())
 
 	c.JSON(http.StatusOK, UserResponse{
 		Email: user.Email,

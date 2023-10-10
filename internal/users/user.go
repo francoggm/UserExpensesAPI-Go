@@ -16,12 +16,12 @@ func (s *session) isExpired() bool {
 var sessions = make(map[string]session)
 
 type User struct {
-	ID        int64  `json:"id" db:"id"`
-	Email     string `json:"email" db:"email"`
-	Name      string `json:"name" db:"name"`
-	Password  string `json:"password" db:"password"`
-	CreatedAt string `json:"created_at" db:"created_at"`
-	LastLogin string `json:"last_login" db:"last_login"`
+	ID        int64     `json:"id" db:"id"`
+	Email     string    `json:"email" db:"email"`
+	Name      string    `json:"name" db:"name"`
+	Password  string    `json:"password" db:"password"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	LastLogin time.Time `json:"last_login" db:"last_login"`
 }
 
 type UserResponse struct {
@@ -32,11 +32,13 @@ type UserResponse struct {
 type Repository interface {
 	CreateUser(user *User) error
 	GetUserByEmail(email string) (*User, error)
+	SetLastLogin(id int64, lastLogin time.Time) error
 }
 
 type Service interface {
 	CreateUser(user *User) error
 	GetUserByEmail(email string) (*User, error)
+	SetLastLogin(id int64, lastLogin time.Time) error
 }
 
 func IsAuthenticated(sessionToken string) bool {

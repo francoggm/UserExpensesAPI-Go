@@ -90,9 +90,9 @@ func (r *repository) CreateExpense(expense *Expense) error {
 
 	query := "INSERT INTO expenses (user_id, title, description, value, category_type, movimentation_type, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 
-	createdDate := time.Now().Format("2006-01-02 15:04:05")
+	createdDate := time.Now()
 
-	err := r.db.QueryRow(query, expense.UserID, expense.Title, expense.Description, expense.Value, expense.Category, expense.Movimentation, createdDate).Scan(&id)
+	err := r.db.QueryRow(query, expense.UserID, expense.Title, expense.Description, expense.Value, expense.Category, expense.Movimentation, createdDate.Format("2006-01-02 15:04:05")).Scan(&id)
 	if err != nil {
 		return err
 	}
