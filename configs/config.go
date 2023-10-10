@@ -1,6 +1,10 @@
 package configs
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 type config struct {
 	DB         string
@@ -11,6 +15,7 @@ type config struct {
 	APIAddr    string
 	APIPort    string
 	Secret     string
+	Timeout    time.Duration
 }
 
 var cfg *config
@@ -35,6 +40,7 @@ func Load() error {
 	cfg.APIAddr = viper.GetString("API_ADDR")
 	cfg.APIPort = viper.GetString("API_PORT")
 	cfg.Secret = viper.GetString("SECRET")
+	cfg.Timeout = time.Duration(viper.GetInt("TIMEOUT"))
 
 	return nil
 }

@@ -5,9 +5,11 @@ import (
 	"expenses_api/internal/expenses"
 	"expenses_api/internal/users"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/timeout"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,10 +27,25 @@ func configureCors() {
 	)
 }
 
+func configureTimeout() {
+	cfg := configs.GetConfigs()
+
+	engine.Use(timeout.New(
+		timeout.WithTimeout(cfg.Timeout*time.Second),
+		timeout.WithHandler(func(c *gin.Context) {
+			c.Next()
+		}),
+		timeout.WithResponse(func(c *gin.Context) {
+			c.AbortWithStatus(http.StatusRequestTimeout)
+		}),
+	))
+}
+
 func ConfigureRouters(userHandler *users.Handler, expenseHandler *expenses.Handler) {
 	engine = gin.Default()
 
 	configureCors()
+	configureTimeout()
 
 	authGroup := engine.Group("/auth")
 
