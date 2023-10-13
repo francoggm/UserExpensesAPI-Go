@@ -2,9 +2,10 @@ package users
 
 import (
 	"database/sql"
-	"expenses_api/utils"
 	"net/http"
 	"time"
+
+	"github.com/francoggm/go_expenses_api/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

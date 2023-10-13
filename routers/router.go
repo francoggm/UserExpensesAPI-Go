@@ -1,12 +1,13 @@
 package routers
 
 import (
-	"expenses_api/configs"
-	"expenses_api/internal/expenses"
-	"expenses_api/internal/users"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/francoggm/go_expenses_api/configs"
+	"github.com/francoggm/go_expenses_api/internal/expenses"
+	"github.com/francoggm/go_expenses_api/internal/users"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/timeout"

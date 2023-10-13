@@ -2,7 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"expenses_api/configs"
+	"github.com/francoggm/go_expenses_api/configs"
 	"fmt"
 
 	_ "github.com/lib/pq"

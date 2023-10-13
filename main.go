@@ -1,12 +1,13 @@
 package main
 
 import (
-	"expenses_api/configs"
-	"expenses_api/db"
-	"expenses_api/internal/expenses"
-	"expenses_api/internal/users"
-	"expenses_api/routers"
 	"log"
+
+	"github.com/francoggm/go_expenses_api/configs"
+	"github.com/francoggm/go_expenses_api/db"
+	"github.com/francoggm/go_expenses_api/internal/expenses"
+	"github.com/francoggm/go_expenses_api/internal/users"
+	"github.com/francoggm/go_expenses_api/routers"
 )
 
 func main() {

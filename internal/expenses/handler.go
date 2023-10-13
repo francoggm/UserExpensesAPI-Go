@@ -2,9 +2,10 @@ package expenses
 
 import (
 	"database/sql"
-	"expenses_api/internal/users"
 	"net/http"
 	"strconv"
+
+	"github.com/francoggm/go_expenses_api/internal/users"
 
 	"github.com/gin-gonic/gin"
 )
