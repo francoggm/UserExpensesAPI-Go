@@ -36,10 +36,10 @@ func (r *repository) ListExpenses(userId int64) ([]*Expense, error) {
 			&expense.UserID,
 			&expense.Title,
 			&description,
-			&expense.CreatedAt,
 			&expense.Value,
 			&categoryType,
 			&movimentationType,
+			&expense.CreatedAt,
 		)
 
 		if err != nil {
@@ -68,10 +68,10 @@ func (r *repository) GetExpense(id, userId int64) (*Expense, error) {
 		&expense.UserID,
 		&expense.Title,
 		&description,
-		&expense.CreatedAt,
 		&expense.Value,
 		&categoryType,
 		&movimentationType,
+		&expense.CreatedAt,
 	)
 
 	if err != nil {

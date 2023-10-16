@@ -52,6 +52,7 @@ func ConfigureRouters(userHandler *users.Handler, expenseHandler *expenses.Handl
 
 	authGroup.POST("/signup", userHandler.Register)
 	authGroup.POST("/login", userHandler.Login)
+	authGroup.POST("/refresh", userHandler.Authenticate, userHandler.RefreshSession)
 
 	expensesGroup := engine.Group("/expenses")
 

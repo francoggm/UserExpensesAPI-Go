@@ -7,15 +7,16 @@ import (
 )
 
 type config struct {
-	DB         string
-	DBPort     string
-	DBHost     string
-	DBUser     string
-	DBPassword string
-	APIAddr    string
-	APIPort    string
-	Secret     string
-	Timeout    time.Duration
+	DB             string
+	DBPort         string
+	DBHost         string
+	DBUser         string
+	DBPassword     string
+	APIAddr        string
+	APIPort        string
+	Secret         string
+	Timeout        time.Duration
+	SessionExpires time.Duration
 }
 
 var cfg *config
@@ -38,6 +39,14 @@ func Load() error {
 		cfg.Timeout = time.Duration(10)
 	} else {
 		cfg.Timeout = time.Duration(timeout)
+	}
+
+	sessionExpires, err := strconv.Atoi(os.Getenv("SESSION_EXPIRES"))
+	if err != nil {
+		// default session expires time
+		cfg.SessionExpires = time.Duration(1800)
+	} else {
+		cfg.SessionExpires = time.Duration(sessionExpires)
 	}
 
 	return nil
