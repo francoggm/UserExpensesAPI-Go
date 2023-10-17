@@ -6,17 +6,20 @@ import (
 	"strconv"
 
 	"github.com/francoggm/go_expenses_api/internal/users"
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	srv Service
+	srv    Service
+	logger *zap.SugaredLogger
 }
 
-func NewHandler(s Service) *Handler {
+func NewHandler(s Service, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
-		srv: s,
+		srv:    s,
+		logger: logger,
 	}
 }
 
@@ -25,6 +28,13 @@ func (h *Handler) ListExpenses(c *gin.Context) {
 
 	userId := users.GetIdBySession(sessionToken)
 	if userId == 0 {
+		h.logger.Warnw("not authenticated",
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "listExpenses"),
+		)
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "not authenticated",
 			"data":    nil,
@@ -35,6 +45,14 @@ func (h *Handler) ListExpenses(c *gin.Context) {
 
 	expenses, err := h.srv.ListExpenses(userId)
 	if err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "listExpenses"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -57,6 +75,14 @@ func (h *Handler) ListExpenses(c *gin.Context) {
 		})
 	}
 
+	h.logger.Infow("success list expenses",
+		zap.String("sessionToken", sessionToken),
+		zap.Int64("userId", userId),
+		zap.Int("expensesCount", len(expensesResponse)),
+		zap.String("IP", c.RemoteIP()),
+		zap.String("handler", "listExpenses"),
+	)
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data":    expensesResponse,
@@ -68,6 +94,13 @@ func (h *Handler) GetExpense(c *gin.Context) {
 
 	userId := users.GetIdBySession(sessionToken)
 	if userId == 0 {
+		h.logger.Warnw("not authenticated",
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "getExpense"),
+		)
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "not authenticated",
 			"data":    nil,
@@ -77,8 +110,18 @@ func (h *Handler) GetExpense(c *gin.Context) {
 	}
 
 	pathId := c.Param("id")
+
 	id, err := strconv.ParseInt(pathId, 10, 64)
 	if err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.Int64("expenseId", id),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "getExpense"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -90,6 +133,14 @@ func (h *Handler) GetExpense(c *gin.Context) {
 	expense, err := h.srv.GetExpense(id, userId)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			h.logger.Warnw("item not found",
+				zap.String("sessionToken", sessionToken),
+				zap.Int64("userId", userId),
+				zap.Int64("expenseId", id),
+				zap.String("IP", c.RemoteIP()),
+				zap.String("handler", "getExpense"),
+			)
+
 			c.JSON(http.StatusNotFound, gin.H{
 				"message": "item not found",
 				"data":    nil,
@@ -97,6 +148,15 @@ func (h *Handler) GetExpense(c *gin.Context) {
 
 			return
 		} else {
+			h.logger.Errorw("internal error",
+				zap.Error(err),
+				zap.String("sessionToken", sessionToken),
+				zap.Int64("userId", userId),
+				zap.Int64("expenseId", id),
+				zap.String("IP", c.RemoteIP()),
+				zap.String("handler", "getExpense"),
+			)
+
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "internal error, please try again",
 				"data":    nil,
@@ -105,6 +165,14 @@ func (h *Handler) GetExpense(c *gin.Context) {
 			return
 		}
 	}
+
+	h.logger.Infow("success get expense",
+		zap.String("sessionToken", sessionToken),
+		zap.Int64("userId", userId),
+		zap.Int64("expenseId", id),
+		zap.String("IP", c.RemoteIP()),
+		zap.String("handler", "getExpense"),
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
@@ -127,6 +195,13 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 
 	userId := users.GetIdBySession(sessionToken)
 	if userId == 0 {
+		h.logger.Warnw("not authenticated",
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "createExpense"),
+		)
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "not authenticated",
 			"data":    nil,
@@ -136,6 +211,14 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 	}
 
 	if err := c.BindJSON(&req); err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "createExpense"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -147,6 +230,15 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 	req.UserID = userId
 
 	if err := h.srv.CreateExpense(&req); err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.Int64("expenseId", req.ID),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "createExpense"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -154,6 +246,14 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 
 		return
 	}
+
+	h.logger.Infow("success create expense",
+		zap.String("sessionToken", sessionToken),
+		zap.Int64("userId", userId),
+		zap.Int64("expenseId", req.ID),
+		zap.String("IP", c.RemoteIP()),
+		zap.String("handler", "getExpense"),
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
@@ -174,6 +274,13 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 
 	userId := users.GetIdBySession(sessionToken)
 	if userId == 0 {
+		h.logger.Warnw("not authenticated",
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "updateExpense"),
+		)
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "not authenticated",
 			"data":    nil,
@@ -183,8 +290,18 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 	}
 
 	pathId := c.Param("id")
+
 	id, err := strconv.ParseInt(pathId, 10, 64)
 	if err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.Int64("expenseId", id),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "updateExpense"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -196,6 +313,14 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 	expense, err := h.srv.GetExpense(id, userId)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			h.logger.Warnw("item not found",
+				zap.String("sessionToken", sessionToken),
+				zap.Int64("userId", userId),
+				zap.Int64("expenseId", id),
+				zap.String("IP", c.RemoteIP()),
+				zap.String("handler", "updateExpense"),
+			)
+
 			c.JSON(http.StatusNotFound, gin.H{
 				"message": "item not found",
 				"data":    nil,
@@ -203,6 +328,15 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 
 			return
 		} else {
+			h.logger.Errorw("internal error",
+				zap.Error(err),
+				zap.String("sessionToken", sessionToken),
+				zap.Int64("userId", userId),
+				zap.Int64("expenseId", id),
+				zap.String("IP", c.RemoteIP()),
+				zap.String("handler", "updateExpense"),
+			)
+
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "internal error, please try again",
 				"data":    nil,
@@ -213,6 +347,15 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 	}
 
 	if err := c.BindJSON(&expense); err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.Int64("expenseId", id),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "updateExpense"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -223,6 +366,15 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 
 	err = h.srv.UpdateExpense(id, userId, expense)
 	if err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.Int64("expenseId", id),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "updateExpense"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -232,6 +384,14 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 	}
 
 	expense, _ = h.srv.GetExpense(id, userId)
+
+	h.logger.Infow("success update expense",
+		zap.String("sessionToken", sessionToken),
+		zap.Int64("userId", userId),
+		zap.Int64("expenseId", id),
+		zap.String("IP", c.RemoteIP()),
+		zap.String("handler", "updateExpense"),
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
@@ -252,6 +412,13 @@ func (h *Handler) DeleteExpense(c *gin.Context) {
 
 	userId := users.GetIdBySession(sessionToken)
 	if userId == 0 {
+		h.logger.Warnw("not authenticated",
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "deleteExpense"),
+		)
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "not authenticated",
 			"data":    nil,
@@ -261,8 +428,18 @@ func (h *Handler) DeleteExpense(c *gin.Context) {
 	}
 
 	pathId := c.Param("id")
+
 	id, err := strconv.ParseInt(pathId, 10, 64)
 	if err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.Int64("expenseId", id),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "deleteExpense"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -274,6 +451,14 @@ func (h *Handler) DeleteExpense(c *gin.Context) {
 	_, err = h.srv.GetExpense(id, userId)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			h.logger.Warnw("item not found",
+				zap.String("sessionToken", sessionToken),
+				zap.Int64("userId", userId),
+				zap.Int64("expenseId", id),
+				zap.String("IP", c.RemoteIP()),
+				zap.String("handler", "deleteExpense"),
+			)
+
 			c.JSON(http.StatusNotFound, gin.H{
 				"message": "item not found",
 				"data":    nil,
@@ -281,6 +466,15 @@ func (h *Handler) DeleteExpense(c *gin.Context) {
 
 			return
 		} else {
+			h.logger.Errorw("internal error",
+				zap.Error(err),
+				zap.String("sessionToken", sessionToken),
+				zap.Int64("userId", userId),
+				zap.Int64("expenseId", id),
+				zap.String("IP", c.RemoteIP()),
+				zap.String("handler", "deleteExpense"),
+			)
+
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "internal error, please try again",
 				"data":    nil,
@@ -292,6 +486,15 @@ func (h *Handler) DeleteExpense(c *gin.Context) {
 
 	err = h.srv.DeleteExpense(id, userId)
 	if err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("sessionToken", sessionToken),
+			zap.Int64("userId", userId),
+			zap.Int64("expenseId", id),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "deleteExpense"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -299,6 +502,14 @@ func (h *Handler) DeleteExpense(c *gin.Context) {
 
 		return
 	}
+
+	h.logger.Infow("success delete expense",
+		zap.String("sessionToken", sessionToken),
+		zap.Int64("userId", userId),
+		zap.Int64("expenseId", id),
+		zap.String("IP", c.RemoteIP()),
+		zap.String("handler", "deleteExpense"),
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",

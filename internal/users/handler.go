@@ -7,24 +7,36 @@ import (
 
 	"github.com/francoggm/go_expenses_api/configs"
 	"github.com/francoggm/go_expenses_api/utils"
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type Handler struct {
-	srv Service
+	srv    Service
+	logger *zap.SugaredLogger
 }
 
-func NewHandler(s Service) *Handler {
+func NewHandler(s Service, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
-		srv: s,
+		srv:    s,
+		logger: logger,
 	}
 }
 
 func (h *Handler) Register(c *gin.Context) {
 	var req User
+
 	if err := c.BindJSON(&req); err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("email", req.Email),
+			zap.String("name", req.Name),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "register"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -35,6 +47,15 @@ func (h *Handler) Register(c *gin.Context) {
 
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.Int64("userId", req.ID),
+			zap.String("email", req.Email),
+			zap.String("name", req.Name),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "register"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -47,6 +68,16 @@ func (h *Handler) Register(c *gin.Context) {
 
 	err = h.srv.CreateUser(&req)
 	if err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.Int64("userId", req.ID),
+			zap.String("email", req.Email),
+			zap.String("name", req.Name),
+			zap.String("createdAt", req.CreatedAt.String()),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "register"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -54,6 +85,15 @@ func (h *Handler) Register(c *gin.Context) {
 
 		return
 	}
+
+	h.logger.Infow("success register user",
+		zap.Int64("userId", req.ID),
+		zap.String("email", req.Email),
+		zap.String("name", req.Name),
+		zap.String("createdAt", req.CreatedAt.String()),
+		zap.String("IP", c.RemoteIP()),
+		zap.String("handler", "register"),
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
@@ -67,6 +107,15 @@ func (h *Handler) Register(c *gin.Context) {
 func (h *Handler) Login(c *gin.Context) {
 	var req User
 	if err := c.BindJSON(&req); err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.Int64("userId", req.ID),
+			zap.String("email", req.Email),
+			zap.String("name", req.Name),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "login"),
+		)
+
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "internal error, please try again",
 			"data":    nil,
@@ -78,6 +127,14 @@ func (h *Handler) Login(c *gin.Context) {
 	user, err := h.srv.GetUserByEmail(req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			h.logger.Warnw("user not found",
+				zap.Int64("userId", req.ID),
+				zap.String("email", req.Email),
+				zap.String("name", req.Name),
+				zap.String("IP", c.RemoteIP()),
+				zap.String("handler", "login"),
+			)
+
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "invalid account informations",
 				"data":    nil,
@@ -85,6 +142,15 @@ func (h *Handler) Login(c *gin.Context) {
 
 			return
 		} else {
+			h.logger.Errorw("internal error",
+				zap.Error(err),
+				zap.Int64("userId", req.ID),
+				zap.String("email", req.Email),
+				zap.String("name", req.Name),
+				zap.String("IP", c.RemoteIP()),
+				zap.String("handler", "login"),
+			)
+
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "internal error, please try again",
 				"data":    nil,
@@ -96,6 +162,15 @@ func (h *Handler) Login(c *gin.Context) {
 
 	err = utils.CheckHashedPassword(user.Password, req.Password)
 	if err != nil {
+		h.logger.Warnw("invalid account informations",
+			zap.Int64("userId", req.ID),
+			zap.String("email", req.Email),
+			zap.String("name", req.Name),
+			zap.String("createdAt", req.CreatedAt.String()),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "login"),
+		)
+
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "invalid account informations",
 			"data":    nil,
@@ -119,6 +194,16 @@ func (h *Handler) Login(c *gin.Context) {
 
 	h.srv.SetLastLogin(user.ID, time.Now())
 
+	h.logger.Infow("success login user",
+		zap.Int64("userId", user.ID),
+		zap.String("email", user.Email),
+		zap.String("name", user.Name),
+		zap.String("createdAt", user.CreatedAt.String()),
+		zap.String("lastLogin", user.LastLogin.String()),
+		zap.String("IP", c.RemoteIP()),
+		zap.String("handler", "register"),
+	)
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data": UserResponse{
@@ -131,10 +216,17 @@ func (h *Handler) Login(c *gin.Context) {
 func (h *Handler) Authenticate(c *gin.Context) {
 	sessionToken, _ := c.Cookie("session_token")
 	if !IsAuthenticated(sessionToken) {
+		h.logger.Warnw("not authenticated",
+			zap.String("sessionToken", sessionToken),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "login"),
+		)
+
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"message": "please login to continue!",
 			"data":    nil,
 		})
+
 		return
 	}
 }
@@ -153,6 +245,14 @@ func (h *Handler) RefreshSession(c *gin.Context) {
 	delete(sessions, sessionToken)
 
 	c.SetCookie("session_token", sessionId, int(cfg.SessionExpires*time.Second), "/", "localhost", false, true)
+
+	h.logger.Infow("refresh session",
+		zap.Int64("userId", sessions[sessionToken].userId),
+		zap.String("oldSessionToken", sessionToken),
+		zap.String("newSessionToken", sessionId),
+		zap.String("IP", c.RemoteIP()),
+		zap.String("handler", "register"),
+	)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",

@@ -8,6 +8,7 @@ import (
 	"github.com/francoggm/go_expenses_api/configs"
 	"github.com/francoggm/go_expenses_api/internal/expenses"
 	"github.com/francoggm/go_expenses_api/internal/users"
+	"go.uber.org/zap"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/timeout"
@@ -64,8 +65,12 @@ func ConfigureRouters(userHandler *users.Handler, expenseHandler *expenses.Handl
 	expensesGroup.DELETE("/:id", expenseHandler.DeleteExpense)
 }
 
-func Start() error {
+func Start(logger *zap.SugaredLogger) error {
 	cfg := configs.GetConfigs()
+
+	logger.Infow("starting server",
+		zap.String("addr", fmt.Sprintf("%s:%s", cfg.APIAddr, cfg.APIPort)),
+	)
 
 	return engine.Run(fmt.Sprintf("%s:%s", cfg.APIAddr, cfg.APIPort))
 }
