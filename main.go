@@ -13,18 +13,16 @@ import (
 )
 
 func main() {
+	err := configs.Load()
+	if err != nil {
+		log.Fatalf("failed to load configs! -> %s", err)
+	}
+
 	logger, err := logger.NewLogger()
 	if err != nil {
 		log.Fatalf("failed to create logger! -> %s", err)
 	}
 	defer logger.Sync()
-
-	err = configs.Load()
-	if err != nil {
-		logger.Fatalw("failed to load configs!",
-			zap.Error(err),
-		)
-	}
 
 	db, err := db.NewDatabase()
 	if err != nil {

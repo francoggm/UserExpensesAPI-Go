@@ -1,9 +1,9 @@
 package configs
 
 import (
-	"os"
-	"strconv"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type config struct {
@@ -17,37 +17,37 @@ type config struct {
 	Secret         string
 	Timeout        time.Duration
 	SessionExpires time.Duration
+	LogRemoveDays  int
 }
 
 var cfg *config
 
+func init() {
+	viper.SetDefault("TIMEOUT", "10")
+	viper.SetDefault("SESSION_EXPIRES", "1800")
+	viper.SetDefault("API_PORT", "8080")
+}
+
 func Load() error {
+	viper.SetConfigFile(".env")
+	err := viper.ReadInConfig()
+	if err != nil {
+		return err
+	}
+
 	cfg = new(config)
 
-	cfg.DB = os.Getenv("DB")
-	cfg.DBPort = os.Getenv("DB_PORT")
-	cfg.DBHost = os.Getenv("DB_HOST")
-	cfg.DBUser = os.Getenv("DB_USER")
-	cfg.DBPassword = os.Getenv("DB_PASSWORD")
-	cfg.APIAddr = os.Getenv("API_ADDR")
-	cfg.APIPort = os.Getenv("API_PORT")
-	cfg.Secret = os.Getenv("SECRET")
-
-	timeout, err := strconv.Atoi(os.Getenv("TIMEOUT"))
-	if err != nil {
-		// default timeout
-		cfg.Timeout = time.Duration(10)
-	} else {
-		cfg.Timeout = time.Duration(timeout)
-	}
-
-	sessionExpires, err := strconv.Atoi(os.Getenv("SESSION_EXPIRES"))
-	if err != nil {
-		// default session expires time
-		cfg.SessionExpires = time.Duration(1800)
-	} else {
-		cfg.SessionExpires = time.Duration(sessionExpires)
-	}
+	cfg.DB = viper.GetString("POSTGRES_DB")
+	cfg.DBPort = viper.GetString("POSTGRES_PORT")
+	cfg.DBHost = viper.GetString("POSTGRES_HOST")
+	cfg.DBUser = viper.GetString("POSTGRES_USER")
+	cfg.DBPassword = viper.GetString("POSTGRES_PASSWORD")
+	cfg.APIAddr = viper.GetString("API_ADDR")
+	cfg.APIPort = viper.GetString("API_PORT")
+	cfg.Secret = viper.GetString("SECRET")
+	cfg.Timeout = time.Duration(viper.GetInt("TIMEOUT"))
+	cfg.SessionExpires = time.Duration(viper.GetInt("SESSION_EXPIRES"))
+	cfg.LogRemoveDays = viper.GetInt("LOG_REMOVE_DAYS")
 
 	return nil
 }

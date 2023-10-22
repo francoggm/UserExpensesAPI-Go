@@ -2,8 +2,9 @@ package db
 
 import (
 	"database/sql"
-	"github.com/francoggm/go_expenses_api/configs"
 	"fmt"
+
+	"github.com/francoggm/go_expenses_api/configs"
 
 	_ "github.com/lib/pq"
 )
@@ -37,15 +38,16 @@ func createTables(db *sql.DB) error {
 
 func NewDatabase() (*sql.DB, error) {
 	cfg := configs.GetConfigs()
-
+	
 	sc := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DB)
-
+	
 	db, err := sql.Open("postgres", sc)
 	if err != nil {
 		return nil, err
 	}
 
-	err = createTables(db); if err != nil {
+	err = createTables(db)
+	if err != nil {
 		fmt.Print("error creating tables!")
 	}
 
