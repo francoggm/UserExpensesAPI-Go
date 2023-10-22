@@ -18,11 +18,14 @@ type config struct {
 	Timeout        time.Duration
 	SessionExpires time.Duration
 	LogRemoveDays  int
+	CookieDomain   string
 }
 
 var cfg *config
 
 func init() {
+	cfg = new(config)
+
 	viper.SetDefault("TIMEOUT", "10")
 	viper.SetDefault("SESSION_EXPIRES", "1800")
 	viper.SetDefault("API_PORT", "8080")
@@ -35,8 +38,6 @@ func Load() error {
 		return err
 	}
 
-	cfg = new(config)
-
 	cfg.DB = viper.GetString("POSTGRES_DB")
 	cfg.DBPort = viper.GetString("POSTGRES_PORT")
 	cfg.DBHost = viper.GetString("POSTGRES_HOST")
@@ -48,6 +49,7 @@ func Load() error {
 	cfg.Timeout = time.Duration(viper.GetInt("TIMEOUT"))
 	cfg.SessionExpires = time.Duration(viper.GetInt("SESSION_EXPIRES"))
 	cfg.LogRemoveDays = viper.GetInt("LOG_REMOVE_DAYS")
+	cfg.CookieDomain = viper.GetString("COOKIE_DOMAIN")
 
 	return nil
 }

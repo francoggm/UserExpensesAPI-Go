@@ -209,7 +209,7 @@ func (h *Handler) Login(c *gin.Context) {
 		expires: time.Now().Add(cfg.SessionExpires * time.Second),
 	}
 
-	c.SetCookie("session_token", sessionId, int(cfg.SessionExpires*time.Second), "/", "localhost", false, true)
+	c.SetCookie("session_token", sessionId, int(cfg.SessionExpires*time.Second), "/", cfg.CookieDomain, false, true)
 
 	h.srv.SetLastLogin(user.ID, time.Now())
 
@@ -263,7 +263,7 @@ func (h *Handler) RefreshSession(c *gin.Context) {
 
 	delete(sessions, sessionToken)
 
-	c.SetCookie("session_token", sessionId, int(cfg.SessionExpires*time.Second), "/", "localhost", false, true)
+	c.SetCookie("session_token", sessionId, int(cfg.SessionExpires*time.Second), "/", cfg.CookieDomain, false, true)
 
 	h.logger.Infow("refresh session",
 		zap.Int64("userId", sessions[sessionToken].userId),

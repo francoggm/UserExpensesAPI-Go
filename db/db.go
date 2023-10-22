@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	"github.com/francoggm/go_expenses_api/configs"
 
@@ -38,9 +39,13 @@ func createTables(db *sql.DB) error {
 
 func NewDatabase() (*sql.DB, error) {
 	cfg := configs.GetConfigs()
-	
-	sc := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DB)
-	
+
+	// deploy env config
+	sc := os.Getenv("DATABASE_URL")
+	if sc == "" {
+		sc = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DB)
+	}
+
 	db, err := sql.Open("postgres", sc)
 	if err != nil {
 		return nil, err
