@@ -47,7 +47,7 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	_, err := h.srv.GetUserByEmail(req.Email)
-	if errors.Is(err, sql.ErrNoRows) {
+	if !errors.Is(err, sql.ErrNoRows) {
 		h.logger.Warnw("user already exists",
 			zap.Error(err),
 			zap.String("email", req.Email),
@@ -58,21 +58,6 @@ func (h *Handler) Register(c *gin.Context) {
 
 		c.JSON(http.StatusConflict, gin.H{
 			"message": "user already exists",
-			"data":    nil,
-		})
-
-		return
-	} else if err != nil {
-		h.logger.Errorw("internal error",
-			zap.Error(err),
-			zap.String("email", req.Email),
-			zap.String("name", req.Name),
-			zap.String("IP", c.RemoteIP()),
-			zap.String("handler", "register"),
-		)
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "internal error, please try again",
 			"data":    nil,
 		})
 
