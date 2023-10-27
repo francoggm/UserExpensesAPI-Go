@@ -13,8 +13,8 @@ func NewService(r Repository) Service {
 	}
 }
 
-func (s *service) CreateUser(user *User) error {
-	return s.repo.CreateUser(user)
+func (s *service) CreateUser(req *RegisterRequest) (*User, error) {
+	return s.repo.CreateUser(req)
 }
 
 func (s *service) GetUserByEmail(email string) (*User, error) {

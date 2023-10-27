@@ -27,9 +27,42 @@ func NewHandler(s Service, logger *zap.SugaredLogger) *Handler {
 }
 
 func (h *Handler) Register(c *gin.Context) {
-	var req User
+	var req RegisterRequest
 
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Errorw("internal error",
+			zap.Error(err),
+			zap.String("email", req.Email),
+			zap.String("name", req.Name),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "register"),
+		)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "error in request body",
+			"data":    nil,
+		})
+
+		return
+	}
+
+	_, err := h.srv.GetUserByEmail(req.Email)
+	if errors.Is(err, sql.ErrNoRows) {
+		h.logger.Warnw("user already exists",
+			zap.Error(err),
+			zap.String("email", req.Email),
+			zap.String("name", req.Name),
+			zap.String("IP", c.RemoteIP()),
+			zap.String("handler", "register"),
+		)
+
+		c.JSON(http.StatusConflict, gin.H{
+			"message": "user already exists",
+			"data":    nil,
+		})
+
+		return
+	} else if err != nil {
 		h.logger.Errorw("internal error",
 			zap.Error(err),
 			zap.String("email", req.Email),
@@ -46,29 +79,10 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
-	_, err := h.srv.GetUserByEmail(req.Email)
-	if !errors.Is(err, sql.ErrNoRows) {
-		h.logger.Warnw("user already exists",
-			zap.Error(err),
-			zap.String("email", req.Email),
-			zap.String("name", req.Name),
-			zap.String("IP", c.RemoteIP()),
-			zap.String("handler", "register"),
-		)
-
-		c.JSON(http.StatusConflict, gin.H{
-			"message": "user already exists",
-			"data":    nil,
-		})
-
-		return
-	}
-
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		h.logger.Errorw("internal error",
 			zap.Error(err),
-			zap.Int64("userId", req.ID),
 			zap.String("email", req.Email),
 			zap.String("name", req.Name),
 			zap.String("IP", c.RemoteIP()),
@@ -85,14 +99,12 @@ func (h *Handler) Register(c *gin.Context) {
 
 	req.Password = hashedPassword
 
-	err = h.srv.CreateUser(&req)
+	user, err := h.srv.CreateUser(&req)
 	if err != nil {
 		h.logger.Errorw("internal error",
 			zap.Error(err),
-			zap.Int64("userId", req.ID),
 			zap.String("email", req.Email),
 			zap.String("name", req.Name),
-			zap.String("createdAt", req.CreatedAt.String()),
 			zap.String("IP", c.RemoteIP()),
 			zap.String("handler", "register"),
 		)
@@ -106,10 +118,10 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	h.logger.Infow("success register user",
-		zap.Int64("userId", req.ID),
-		zap.String("email", req.Email),
-		zap.String("name", req.Name),
-		zap.String("createdAt", req.CreatedAt.String()),
+		zap.Int64("userId", user.ID),
+		zap.String("email", user.Email),
+		zap.String("name", user.Name),
+		zap.String("createdAt", user.CreatedAt.String()),
 		zap.String("IP", c.RemoteIP()),
 		zap.String("handler", "register"),
 	)
@@ -117,26 +129,25 @@ func (h *Handler) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data": UserResponse{
-			Email: req.Email,
-			Name:  req.Name,
+			Email:     user.Email,
+			Name:      user.Name,
+			LastLogin: user.LastLogin,
 		},
 	})
 }
 
 func (h *Handler) Login(c *gin.Context) {
-	var req User
-	if err := c.BindJSON(&req); err != nil {
+	var req LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Errorw("internal error",
 			zap.Error(err),
-			zap.Int64("userId", req.ID),
 			zap.String("email", req.Email),
-			zap.String("name", req.Name),
 			zap.String("IP", c.RemoteIP()),
 			zap.String("handler", "login"),
 		)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "internal error, please try again",
+			"message": "error in request body",
 			"data":    nil,
 		})
 
@@ -147,14 +158,12 @@ func (h *Handler) Login(c *gin.Context) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			h.logger.Warnw("user not found",
-				zap.Int64("userId", req.ID),
 				zap.String("email", req.Email),
-				zap.String("name", req.Name),
 				zap.String("IP", c.RemoteIP()),
 				zap.String("handler", "login"),
 			)
 
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusNotFound, gin.H{
 				"message": "invalid account informations",
 				"data":    nil,
 			})
@@ -163,9 +172,7 @@ func (h *Handler) Login(c *gin.Context) {
 		} else {
 			h.logger.Errorw("internal error",
 				zap.Error(err),
-				zap.Int64("userId", req.ID),
 				zap.String("email", req.Email),
-				zap.String("name", req.Name),
 				zap.String("IP", c.RemoteIP()),
 				zap.String("handler", "login"),
 			)
@@ -182,10 +189,7 @@ func (h *Handler) Login(c *gin.Context) {
 	err = utils.CheckHashedPassword(user.Password, req.Password)
 	if err != nil {
 		h.logger.Warnw("invalid account informations",
-			zap.Int64("userId", req.ID),
 			zap.String("email", req.Email),
-			zap.String("name", req.Name),
-			zap.String("createdAt", req.CreatedAt.String()),
 			zap.String("IP", c.RemoteIP()),
 			zap.String("handler", "login"),
 		)
@@ -226,8 +230,9 @@ func (h *Handler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data": UserResponse{
-			Email: user.Email,
-			Name:  user.Name,
+			Email:     user.Email,
+			Name:      user.Name,
+			LastLogin: user.LastLogin,
 		},
 	})
 }
