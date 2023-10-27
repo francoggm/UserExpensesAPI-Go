@@ -18,8 +18,8 @@ func (s *service) GetExpense(id, userId int64) (*Expense, error) {
 	return s.repo.GetExpense(id, userId)
 }
 
-func (s *service) CreateExpense(expense *Expense) error {
-	return s.repo.CreateExpense(expense)
+func (s *service) CreateExpense(req *ExpenseRequest, userId int64) (*Expense, error) {
+	return s.repo.CreateExpense(req, userId)
 }
 
 func (s *service) UpdateExpense(id int64, userId int64, expense *Expense) error {

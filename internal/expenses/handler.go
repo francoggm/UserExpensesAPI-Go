@@ -189,7 +189,7 @@ func (h *Handler) GetExpense(c *gin.Context) {
 }
 
 func (h *Handler) CreateExpense(c *gin.Context) {
-	var req Expense
+	var req ExpenseRequest
 
 	sessionToken, _ := c.Cookie("session_token")
 
@@ -210,7 +210,7 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 		return
 	}
 
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Errorw("internal error",
 			zap.Error(err),
 			zap.String("sessionToken", sessionToken),
@@ -227,14 +227,12 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 		return
 	}
 
-	req.UserID = userId
-
-	if err := h.srv.CreateExpense(&req); err != nil {
+	expense, err := h.srv.CreateExpense(&req, userId)
+	if err != nil {
 		h.logger.Errorw("internal error",
 			zap.Error(err),
 			zap.String("sessionToken", sessionToken),
 			zap.Int64("userId", userId),
-			zap.Int64("expenseId", req.ID),
 			zap.String("IP", c.RemoteIP()),
 			zap.String("handler", "createExpense"),
 		)
@@ -250,7 +248,7 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 	h.logger.Infow("success create expense",
 		zap.String("sessionToken", sessionToken),
 		zap.Int64("userId", userId),
-		zap.Int64("expenseId", req.ID),
+		zap.Int64("expenseId", expense.ID),
 		zap.String("IP", c.RemoteIP()),
 		zap.String("handler", "getExpense"),
 	)
@@ -258,13 +256,13 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "success",
 		"data": ExpenseResponse{
-			ID:            req.ID,
-			Title:         req.Title,
-			Description:   req.Description,
-			Value:         req.Value,
-			Category:      req.Category,
-			Movimentation: req.Movimentation,
-			CreatedAt:     req.CreatedAt,
+			ID:            expense.ID,
+			Title:         expense.Title,
+			Description:   expense.Description,
+			Value:         expense.Value,
+			Category:      expense.Category,
+			Movimentation: expense.Movimentation,
+			CreatedAt:     expense.CreatedAt,
 		},
 	})
 }

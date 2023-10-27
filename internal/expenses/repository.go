@@ -85,22 +85,28 @@ func (r *repository) GetExpense(id, userId int64) (*Expense, error) {
 	return &expense, nil
 }
 
-func (r *repository) CreateExpense(expense *Expense) error {
+func (r *repository) CreateExpense(req *ExpenseRequest, userId int64) (*Expense, error) {
 	var id int64
 
 	query := "INSERT INTO expenses (user_id, title, description, value, category_type, movimentation_type, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 
 	createdDate := time.Now()
 
-	err := r.db.QueryRow(query, expense.UserID, expense.Title, expense.Description, expense.Value, expense.Category, expense.Movimentation, createdDate.Format("2006-01-02 15:04:05")).Scan(&id)
+	err := r.db.QueryRow(query, userId, req.Title, req.Description, req.Value, req.Category, req.Movimentation, createdDate.Format("2006-01-02 15:04:05")).Scan(&id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	expense.ID = id
-	expense.CreatedAt = createdDate
-
-	return nil
+	return &Expense{
+		ID:            id,
+		UserID:        userId,
+		Title:         req.Title,
+		Description:   req.Description,
+		Value:         req.Value,
+		Category:      req.Category,
+		Movimentation: req.Movimentation,
+		CreatedAt:     createdDate,
+	}, nil
 }
 
 func (r *repository) UpdateExpense(id int64, userId int64, expense *Expense) error {
