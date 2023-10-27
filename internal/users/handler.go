@@ -39,7 +39,7 @@ func (h *Handler) Register(c *gin.Context) {
 		)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "error in request body",
+			"message": "error in required fields",
 			"data":    nil,
 		})
 
@@ -132,7 +132,7 @@ func (h *Handler) Login(c *gin.Context) {
 		)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "error in request body",
+			"message": "error in required fields",
 			"data":    nil,
 		})
 

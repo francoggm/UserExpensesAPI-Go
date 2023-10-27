@@ -220,7 +220,7 @@ func (h *Handler) CreateExpense(c *gin.Context) {
 		)
 
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "internal error, please try again",
+			"message": "error in required fields",
 			"data":    nil,
 		})
 
